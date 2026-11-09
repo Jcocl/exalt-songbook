@@ -1,0 +1,6 @@
+EXALT Songbook source export
+Source revision: 67f9309bc38845becf10b76fbc0bb8500e481d50
+
+Includes application source, assets, reference seed data, tests and setup documentation.
+README package-manager version corrected to match package.json: pnpm 11.25.0.
+Live cloud database records, uploaded files, installed dependencies and local runtime state are not included.
