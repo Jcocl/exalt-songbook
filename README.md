@@ -11,7 +11,7 @@ A private worship song library and service preparation app. Save a song once, fi
 - Original uploaded files retained in private file storage.
 - Draft/finalized services with ordered songs, arrangement, performance key and notes.
 - Responsive desktop/mobile interface, printing, text/ChordPro exports and JSON backup.
-- ChatGPT sign-in at the private Sites boundary, with administrator/editor/viewer roles checked by the server.
+- Standalone session authentication with administrator/editor/viewer roles checked by the server, plus automatic browser-storage fallback for static hosting.
 
 ## Run locally
 
@@ -22,14 +22,14 @@ pnpm install --frozen-lockfile
 pnpm run build
 ```
 
-The starter's portable preview provides mock authenticated identity for local development only. Never expose that development server as the production application. Building generates the local Worker configuration. On a fresh local database, apply the included schema migration before opening the app. Do not replay an already applied migration.
+Building generates the local Worker configuration. On a fresh local database, apply the included schema migration before opening the app. Do not replay an already applied migration.
 
 ```powershell
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_dazzling_moonstone.sql
+./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_dazzling_moonstone.sql
 pnpm run dev
 ```
 
-The Vite/Workers integration uses the `DB` D1 binding and `BUCKET` R2 binding declared in `.openai/hosting.json`. Local and hosted databases are separate. Use the current generated `dist/server/wrangler.json` for post-build Wrangler commands when the development command does not have a generated configuration yet.
+The Vite/Workers integration uses the `DB` D1 binding and `BUCKET` R2 binding. Local and hosted databases are separate. Use the current generated `dist/server/wrangler.json` for post-build Wrangler commands when the development command does not have a generated configuration yet.
 
 ```powershell
 pnpm test
@@ -37,33 +37,22 @@ pnpm run build
 pnpm run start
 ```
 
-A browser refresh reads saved data from the backend. Browser storage is used for device preferences and unsaved editor drafts, never as the authoritative ministry database. An internet connection is required to open and save the shared library. An already open page may remain readable if the connection drops, but there is no offline library cache or offline synchronization.
-
 Use `pnpm run db:generate` only after changing the database schema, and review the newly generated migration before applying it. The included migration is already sufficient for a fresh checkout.
 
 ## Deployment
 
-The project is configured for a Cloudflare Worker through Sites. `.openai/hosting.json` preserves the exact registered project ID and declares D1 `DB` and R2 `BUCKET`. Sites provisions and attaches those resources, applies generated schema migrations and serves the built Worker. No Supabase, AI search API key or separate identity-provider secret is required.
-
-1. Generate and review schema migrations after schema changes. Commit the SQL and Drizzle metadata; do not edit already applied migrations.
-2. Run tests and the production build.
-3. Push the exact source revision to the Site source repository.
-4. Package that revision and deploy the saved version using the Sites workflow.
-5. Keep the Site private. Add authorized worship-team visitors through the Site's access settings, then assign appropriate application roles.
-
-Do not put repository credentials, service tokens or user headers in source files, browser storage or the deployment manifest. Production identity is supplied by the Sites gateway; the application does not implement an independent password system.
+- **Live Hosted App (GitHub Pages):** [https://jcocl.github.io/exalt-songbook/](https://jcocl.github.io/exalt-songbook/)
+- **Cloudflare Workers (D1 + R2):** Deploy the built Worker with D1 (`DB`) and R2 (`BUCKET`) bindings for shared multi-member persistence.
 
 ## Accounts and permissions
 
-The first authenticated visitor becomes the administrator in an atomic database operation. This is safe at initial launch because the Site starts owner-private. Later authenticated visitors become viewers. They can read songs/lineups and maintain their own favorites; an administrator can grant editor or administrator access after they sign in.
+The first authenticated visitor becomes the administrator in an atomic database operation. Later authenticated visitors become viewers. They can read songs/lineups and maintain their own favorites; an administrator can grant editor or administrator access after they sign in.
 
 - **Administrator:** manage songs, lineups, files and member roles; export/restore backups.
 - **Editor:** manage songs, alternate arrangements, lineups and file imports.
 - **Viewer:** read authorized library content and services; keep personal favorites.
 
 Every write endpoint checks the stored role. Hiding a control is not the authorization mechanism. An administrator cannot demote their own account, and the last administrator cannot be removed. Song/lineup updates carry a revision and reject stale edits instead of overwriting another member's changes.
-
-Site visitor access and application roles are separate. Adding an editor role does not bypass Site access, and merely having a ChatGPT account does not grant access to this private Site. Keep the Site's audience limited to authorized ministry members.
 
 ## Songs and chord format
 

@@ -138,7 +138,7 @@ export async function extractFile(file) {
   if (['txt', 'cho', 'crd', 'chopro', 'chordpro', 'pro'].includes(extension)) return parseImportText(await file.text());
   if (extension === 'pdf') {
     const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-    if (typeof window !== 'undefined') pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+    if (typeof window !== 'undefined') pdfjs.GlobalWorkerOptions.workerSrc = (import.meta.env?.BASE_URL || '/') + 'pdf.worker.min.mjs';
     const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false, useSystemFonts: true }).promise;
     try {
       if (doc.numPages > 80) throw new Error('Import PDFs with 80 pages or fewer. Split larger collections before importing.');
