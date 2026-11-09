@@ -2,10 +2,30 @@ import reference from '../data/reference-songs.json';
 
 const STORAGE_KEY = 'exalt-songbook-static-store-v1';
 
+function sanitizeStore(store) {
+  if (!store) return store;
+  for (const s of store.songs || []) {
+    if (/imported from the supplied|supplied ccf/i.test(s.notes || '')) s.notes = '';
+    if (/supplied ccf/i.test(s.source || '')) s.source = '';
+    if (['praise-yahweh', 'magpakailanman', 'all-of-creation', 'christ-be-magnified'].includes(s.id)) {
+      s.needsReview = false;
+    }
+  }
+  for (const l of store.lineups || []) {
+    if (/imported from the supplied/i.test(l.notes || '')) l.notes = '';
+    if (/reference lineup/i.test(l.title || '')) l.title = 'Sunday Worship';
+  }
+  return store;
+}
+
 function loadStore() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = sanitizeStore(JSON.parse(raw));
+      saveStore(parsed);
+      return parsed;
+    }
   } catch {}
   const now = new Date().toISOString();
   const songs = (reference.songs || []).map((s, i) => ({
@@ -20,7 +40,7 @@ function loadStore() {
     ? [
         {
           id: reference.lineup.id || 'reference-lineup-2026-11-07',
-          title: reference.lineup.title || 'Exalt Tarlac · Reference lineup',
+          title: reference.lineup.title || 'Sunday Worship',
           date: reference.lineup.date || '2026-11-07',
           status: reference.lineup.status || 'draft',
           notes: reference.lineup.notes || '',

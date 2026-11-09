@@ -131,8 +131,8 @@ async function seedReference(db) {
   const inserts = songs.map(song => songInsert(db, song.id, song, 'reference-import', time, true));
   if (reference.lineup && songs.length) {
     const seed = reference.lineup;
-    const lineup = validateLineup({ title: seed.title || 'Exalt Tarlac worship lineup', date: seed.date || '2026-11-07', status: seed.status || 'draft',
-      notes: seed.notes || 'Imported from the supplied ministry PDF. Review chord placement against the original sheet.',
+    const lineup = validateLineup({ title: seed.title || 'Sunday Worship', date: seed.date || '2026-11-07', status: seed.status || 'draft',
+      notes: seed.notes || '',
       entries: seed.entries || songs.map(song => ({ id: `reference-entry-${song.id}`, songId: song.id, key: song.key, notes: '' })) });
     inserts.push(lineupInsert(db, 'reference-lineup-2026-11-07', lineup, 'reference-import', time, true));
     inserts.push(...lineupRefStatements(db, 'reference-lineup-2026-11-07', lineup.entries));
